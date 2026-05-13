@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joseph D. Cruz V. — Computer Science</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream: #f5f0e8;
+      --parchment: #ede5d4;
+      --warm-brown: #5c3d2e;
+      --amber: #c8873a;
+      --ink: #1a1410;
+      --muted: #7a6a58;
+      --border: #d4c4aa;
+      --card-bg: #faf6ef;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    /* ── Noise texture overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.2rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(245, 240, 232, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      transition: box-shadow 0.3s;
+    }
+    nav.scrolled { box-shadow: 0 4px 30px rgba(92,61,46,0.08); }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--warm-brown);
+      letter-spacing: -0.5px;
+    }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      position: relative;
+      transition: color 0.3s;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 0; height: 1px;
+      background: var(--amber);
+      transition: width 0.3s;
+    }
+    .nav-links a:hover { color: var(--warm-brown); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 8rem 4rem 4rem;
+      gap: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      right: -100px; top: -100px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(200, 135, 58, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-text { position: relative; z-index: 1; }
+    .hero-eyebrow {
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--amber);
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.2s forwards;
+    }
+    .hero-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1.05;
+      color: var(--warm-brown);
+      margin-bottom: 1.2rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.4s forwards;
+    }
+    .hero-name em {
+      font-style: italic;
+      color: var(--amber);
+    }
+    .hero-tagline {
+      font-size: 1.15rem;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 480px;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.6s forwards;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.8s forwards;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      border-radius: 2px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      transition: all 0.3s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--warm-brown);
+      color: var(--cream);
+    }
+    .btn-primary:hover {
+      background: var(--ink);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(92,61,46,0.25);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--warm-brown);
+      border: 1.5px solid var(--warm-brown);
+    }
+    .btn-outline:hover {
+      background: var(--warm-brown);
+      color: var(--cream);
+      transform: translateY(-2px);
+    }
+
+    /* Hero visual side */
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      animation: fadeIn 1.2s 0.6s forwards;
+      position: relative;
+    }
+    .avatar-frame {
+      width: 340px;
+      height: 420px;
+      background: var(--parchment);
+      border: 2px solid var(--border);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .avatar-frame::before {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      border: 1px solid var(--border);
+      pointer-events: none;
+      z-index: 2;
+    }
+    .avatar-initials {
+      font-family: 'Playfair Display', serif;
+      font-size: 6rem;
+      font-weight: 900;
+      color: var(--border);
+      user-select: none;
+      line-height: 1;
+    }
+    .avatar-tag {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--warm-brown);
+      color: var(--cream);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.4rem 1.2rem;
+      white-space: nowrap;
+    }
+    .hero-decoration {
+      position: absolute;
+      top: -20px; right: -20px;
+      width: 100px; height: 100px;
+      border: 2px solid var(--amber);
+      opacity: 0.4;
+    }
+
+    /* ── SECTIONS SHARED ── */
+    section { padding: 6rem 4rem; }
+    .section-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--amber);
+      font-weight: 500;
+      margin-bottom: 0.6rem;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      color: var(--warm-brown);
+      margin-bottom: 3rem;
+      line-height: 1.2;
+    }
+    .divider {
+      width: 60px;
+      height: 2px;
+      background: var(--amber);
+      margin-bottom: 2rem;
+    }
+
+    /* ── ABOUT ── */
+    #about {
+      background: var(--parchment);
+      position: relative;
+      overflow: hidden;
+    }
+    #about::before {
+      content: '"';
+      position: absolute;
+      right: 4rem; top: 2rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 20rem;
+      color: var(--border);
+      line-height: 1;
+      pointer-events: none;
+      opacity: 0.4;
+    }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 5rem;
+      align-items: start;
+    }
+    .about-text p {
+      font-size: 1.05rem;
+      line-height: 1.85;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+      font-weight: 300;
+    }
+    .about-text p strong {
+      color: var(--warm-brown);
+      font-weight: 500;
+    }
+    .about-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      position: relative;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--amber);
+    }
+    .stat-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--warm-brown);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      margin-top: 0.3rem;
+    }
+
+    /* ── SKILLS ── */
+    #skills { background: var(--cream); }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .skill-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 2rem;
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .skill-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 15px 40px rgba(92,61,46,0.12);
+    }
+    .skill-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--amber), transparent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s;
+    }
+    .skill-card:hover::after { transform: scaleX(1); }
+    .skill-icon {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+    .skill-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--warm-brown);
+      margin-bottom: 0.4rem;
+    }
+    .skill-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.6;
+      font-weight: 300;
+    }
+    .skill-badge {
+      display: inline-block;
+      margin-top: 0.8rem;
+      padding: 0.2rem 0.7rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 2px;
+    }
+    .badge-learning { background: #fff3e0; color: #c8873a; border: 1px solid #f0c080; }
+    .badge-advanced { background: #efebe6; color: #5c3d2e; border: 1px solid #d4c4aa; }
+    .badge-intermediate { background: #f5f5f0; color: #7a6a58; border: 1px solid #ccc; }
+
+    /* Bar visual */
+    .skill-bar-wrap { margin-top: 1rem; }
+    .skill-bar-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; }
+    .skill-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .skill-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--amber), var(--warm-brown));
+      border-radius: 2px;
+      width: 0;
+      transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    /* ── CERTIFICATIONS ── */
+    #certifications { background: var(--parchment); }
+    .cert-list { display: flex; flex-direction: column; gap: 1rem; max-width: 700px; }
+    .cert-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .cert-item:hover {
+      transform: translateX(6px);
+      box-shadow: 0 8px 30px rgba(92,61,46,0.1);
+    }
+    .cert-icon {
+      width: 44px; height: 44px;
+      background: var(--warm-brown);
+      color: var(--cream);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .cert-info h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--warm-brown);
+      margin-bottom: 0.2rem;
+    }
+    .cert-info p {
+      font-size: 0.83rem;
+      color: var(--muted);
+      font-weight: 300;
+    }
+    .cert-placeholder {
+      border: 2px dashed var(--border);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* ── CONTACT / SOCIAL ── */
+    #contact {
+      background: var(--warm-brown);
+      color: var(--cream);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    #contact::before {
+      content: 'CONNECT';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(6rem, 15vw, 12rem);
+      font-weight: 900;
+      color: rgba(255,255,255,0.03);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    #contact .section-label { color: var(--amber); }
+    #contact .section-title { color: var(--cream); }
+    #contact .divider { background: var(--amber); margin: 0 auto 2rem; }
+    .social-grid {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+    .social-link {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 1rem 2rem;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--cream);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 400;
+      transition: all 0.3s;
+      letter-spacing: 0.02em;
+    }
+    .social-link:hover {
+      background: var(--amber);
+      border-color: var(--amber);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .social-link svg {
+      width: 20px; height: 20px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--ink);
+      color: var(--muted);
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+    }
+    footer span { color: var(--amber); }
+
+    /* ── SCROLL ANIMATIONS ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.revealed {
+      opacity: 1;
+      transform: none;
+    }
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-40px);
+      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal-left.revealed { opacity: 1; transform: none; }
+    .reveal-right {
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal-right.revealed { opacity: 1; transform: none; }
+
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+
+    /* ── KEYFRAMES ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ── PROGRESS BAR ── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--amber), var(--warm-brown));
+      z-index: 999;
+      width: 0%;
+      transition: width 0.1s;
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; padding: 7rem 1.5rem 3rem; text-align: center; }
+      .hero-visual { display: none; }
+      section { padding: 4rem 1.5rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+      #about::before { font-size: 10rem; right: 0; }
+      .social-link { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="progress-bar"></div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <div class="nav-logo">J. D. Cruz V.</div>
+    <ul class="nav-links">
+      <li><a href="#about">Sobre mí</a></li>
+      <li><a href="#skills">Habilidades</a></li>
+      <li><a href="#certifications">Logros</a></li>
+      <li><a href="#contact">Contacto</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-text">
+      <p class="hero-eyebrow">Escuela Politécnica Nacional · Ecuador</p>
+      <h1 class="hero-name">Joseph D.<br><em>Cruz V.</em></h1>
+      <p class="hero-tagline">
+        Estudiante de Ciencias de la Computación apasionado por el desarrollo de software, autodidacta por naturaleza y con curiosidad insaciable por la tecnología.
+      </p>
+      <div class="hero-actions">
+        <a href="#contact" class="btn btn-primary">Conectar</a>
+        <a href="#skills" class="btn btn-outline">Ver habilidades</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-decoration"></div>
+      <div class="avatar-frame">
+        <div class="avatar-initials">JC</div>
+        <div class="avatar-tag">Computer Science Student</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="about-grid">
+      <div class="about-text reveal-left">
+        <p class="section-label">Sobre mí</p>
+        <h2 class="section-title">Aprendiendo,<br>construyendo,<br>creciendo.</h2>
+        <div class="divider"></div>
+        <p>
+          Soy <strong>Joseph Daniel Cruz Valarezo</strong>, estudiante de Ciencias de la Computación en la 
+          <strong>Escuela Politécnica Nacional</strong>, una de las universidades de ingeniería más prestigiosas de Ecuador.
+        </p>
+        <p>
+          Me considero un <strong>autodidacta comprometido</strong>: no espero que el aula sea mi único espacio de aprendizaje. 
+          Busco activamente proyectos, retos y recursos que me permitan crecer más allá del currículo formal.
+        </p>
+        <p>
+          Mi enfoque actual está en fortalecer mis bases en <strong>Java y C</strong>, mientras exploro el ecosistema de 
+          <strong>Python</strong> y sus aplicaciones en ciencia de datos e inteligencia artificial.
+        </p>
+      </div>
+      <div class="about-stats reveal-right">
+        <div class="stat-card reveal reveal-delay-1">
+          <div class="stat-number">EPN</div>
+          <div class="stat-label">Escuela Politécnica Nacional</div>
+        </div>
+        <div class="stat-card reveal reveal-delay-2">
+          <div class="stat-number">CS</div>
+          <div class="stat-label">Ciencias de la Computación</div>
+        </div>
+        <div class="stat-card reveal reveal-delay-3">
+          <div class="stat-number">3+</div>
+          <div class="stat-label">Lenguajes de programación</div>
+        </div>
+        <div class="stat-card reveal reveal-delay-4">
+          <div class="stat-number">∞</div>
+          <div class="stat-label">Curiosidad y ganas de aprender</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <p class="section-label reveal">Habilidades</p>
+    <h2 class="section-title reveal reveal-delay-1">Lenguajes &<br>Competencias</h2>
+    <div class="divider reveal reveal-delay-2"></div>
+
+    <div class="skills-grid">
+
+      <div class="skill-card reveal reveal-delay-1">
+        <div class="skill-icon">☕</div>
+        <div class="skill-name">Java</div>
+        <div class="skill-desc">Dominio sólido del lenguaje. Programación orientada a objetos, estructuras de datos y algoritmos.</div>
+        <span class="skill-badge badge-advanced">Dominio</span>
+        <div class="skill-bar-wrap">
+          <div class="skill-bar-label"><span>Nivel</span><span>Avanzado</span></div>
+          <div class="skill-bar"><div class="skill-bar-fill" data-width="85"></div></div>
+        </div>
+      </div>
+
+      <div class="skill-card reveal reveal-delay-2">
+        <div class="skill-icon">⚙️</div>
+        <div class="skill-name">C</div>
+        <div class="skill-desc">Manejo de memoria, punteros y programación de bajo nivel. Base sólida para entender cómo funciona el hardware.</div>
+        <span class="skill-badge badge-intermediate">Intermedio</span>
+        <div class="skill-bar-wrap">
+          <div class="skill-bar-label"><span>Nivel</span><span>Intermedio</span></div>
+          <div class="skill-bar"><div class="skill-bar-fill" data-width="60"></div></div>
+        </div>
+      </div>
+
+      <div class="skill-card reveal reveal-delay-3">
+        <div class="skill-icon">🐍</div>
+        <div class="skill-name">Python</div>
+        <div class="skill-desc">Actualmente aprendiendo de forma autodidacta. Explorando sintaxis, scripting y sus aplicaciones en análisis de datos.</div>
+        <span class="skill-badge badge-learning">Aprendiendo</span>
+        <div class="skill-bar-wrap">
+          <div class="skill-bar-label"><span>Nivel</span><span>En progreso</span></div>
+          <div class="skill-bar"><div class="skill-bar-fill" data-width="30"></div></div>
+        </div>
+      </div>
+
+      <div class="skill-card reveal reveal-delay-4">
+        <div class="skill-icon">📚</div>
+        <div class="skill-name">Autodidactismo</div>
+        <div class="skill-desc">Habilidad para aprender de manera independiente utilizando documentación, cursos online y proyectos propios.</div>
+        <span class="skill-badge badge-advanced">Fortaleza</span>
+      </div>
+
+      <div class="skill-card reveal reveal-delay-5">
+        <div class="skill-icon">🧩</div>
+        <div class="skill-name">Algoritmos & Estructuras</div>
+        <div class="skill-desc">Comprensión de estructuras de datos fundamentales, análisis de complejidad y resolución de problemas.</div>
+        <span class="skill-badge badge-intermediate">Intermedio</span>
+      </div>
+
+      <div class="skill-card reveal reveal-delay-1">
+        <div class="skill-icon">🔧</div>
+        <div class="skill-name">Herramientas</div>
+        <div class="skill-desc">Git para control de versiones, entornos de desarrollo (IDEs), terminal Linux/Unix y flujos de trabajo de desarrollo.</div>
+        <span class="skill-badge badge-intermediate">Intermedio</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CERTIFICATIONS -->
+  <section id="certifications">
+    <p class="section-label reveal">Logros</p>
+    <h2 class="section-title reveal reveal-delay-1">Concursos &<br>Certificados</h2>
+    <div class="divider reveal reveal-delay-2"></div>
+
+    <div class="cert-list">
+      <div class="cert-item reveal reveal-delay-2">
+        <div class="cert-icon">🏆</div>
+        <div class="cert-info">
+          <h4>JISIC — Competencia Internacional</h4>
+          <p>Participación en la JISIC (Joint International Scientific and Technological Conference). Certificado disponible próximamente.</p>
+        </div>
+      </div>
+
+      <div class="cert-placeholder reveal reveal-delay-3">
+        <p>📄 Aquí puedes añadir tu certificado JISIC u otros logros futuros</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <p class="section-label reveal">Contacto</p>
+    <h2 class="section-title reveal reveal-delay-1">Conectemos</h2>
+    <div class="divider reveal reveal-delay-2"></div>
+    <p class="reveal reveal-delay-3" style="color: rgba(245,240,232,0.65); font-size: 1rem; font-weight: 300; max-width: 500px; margin: 0 auto; line-height: 1.7;">
+      Estoy abierto a colaboraciones, proyectos de software y nuevas oportunidades de aprendizaje. ¡No dudes en escribirme!
+    </p>
+
+    <div class="social-grid">
+      <a href="https://www.linkedin.com/in/joseph-daniel-cruz-valarezo-8b5a8738b" target="_blank" rel="noopener" class="social-link reveal reveal-delay-2">
+        <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        LinkedIn — Joseph D. Cruz V.
+      </a>
+      <a href="https://github.com/Josephdaniel15" target="_blank" rel="noopener" class="social-link reveal reveal-delay-3">
+        <svg viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+        GitHub — Josephdaniel15
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2025 <span>Joseph D. Cruz V.</span> · Escuela Politécnica Nacional · Quito, Ecuador</p>
+  </footer>
+
+  <script>
+    // Progress bar
+    window.addEventListener('scroll', () => {
+      const el = document.getElementById('progress-bar');
+      const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+      el.style.width = pct + '%';
+
+      // Nav shadow
+      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          // Animate skill bars
+          entry.target.querySelectorAll('.skill-bar-fill').forEach(bar => {
+            bar.style.width = bar.dataset.width + '%';
+          });
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => observer.observe(el));
+    document.querySelectorAll('.skill-card').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
